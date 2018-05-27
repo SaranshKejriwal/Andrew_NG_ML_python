@@ -80,7 +80,7 @@ class neuronLayer:
 		print('Param matrix of layer:\n'+str(layerParamArray));
 
 		#length of the error vector is equal to the number of neurons in this layer
-		for neuron in self.neuronArr):
+		for neuron in self.neuronArr:
 			tempErrorHolder = 0; #create a placeholder for neuron		
 			for i in range(len(nextLayerError)):
 				tempErrorHolder = tempErrorHolder + neuron.getParamArr()[i+1]*nextLayerError[i];
