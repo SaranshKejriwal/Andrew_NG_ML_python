@@ -49,7 +49,7 @@ class neuralNetwork:
 		#separate computation for output layer
 		#outputLayer is self.neuronLayerArr[len(self.neuronLayerArr)-1];
 		hypothesis = self.getOutputArr(expectedPoint.getInputArr());#this updates the layer params
-		print('Hypothesis for '+str(expectedPoint.getInputArr())+' : '+str(hypothesis));
+		print('___________________________\nHypothesis for '+str(expectedPoint.getInputArr())+' : '+str(hypothesis));
 		print('Expected Output for '+str(expectedPoint.getInputArr())+' : '+str(expectedPoint.getOutput()));
 
 		#networkError[len(self.neuronLayerArr)-1] holds output layer error
@@ -62,7 +62,8 @@ class neuralNetwork:
 			#supply networkError on (i+1)th layer to i'th layer
 			networkError[i] = self.neuronLayerArr[i].updateBackPropError(networkError[i+1]);
 			#updateBackPropError returns the error vector of that layer to the network level matrix
-
+			print('Error of layer '+str(i)+' : '+str(networkError[i]));
+		print('Neural Network error:\n'+str(networkError));
 		return networkError;
 		
 

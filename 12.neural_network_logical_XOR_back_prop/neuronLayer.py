@@ -74,10 +74,9 @@ class neuronLayer:
 		#implement weighted sum of errorTerms of nextLayerError
 		#error vector delta, doesn't contain bias unit
 
-		print('Error vector received:\n'+str(nextLayerError));
-
+		self.backPropError = [] #reset this vector to hold error from current training example
 		layerParamArray = self.getParamMatrix(); #consolidate param vectors of individual neurons
-		print('Param matrix of layer:\n'+str(layerParamArray));
+		#print('Param matrix of layer:\n'+str(layerParamArray));
 
 		#length of the error vector is equal to the number of neurons in this layer
 		for neuron in self.neuronArr:
@@ -88,6 +87,9 @@ class neuronLayer:
 			neuron.setError(tempErrorHolder);
 			self.backPropError.append(tempErrorHolder);
 
+			#add this value to net error
+
+		#partial deriv wrt a single param (i,j) = a(j,l)*d(i,l+1)
 		return 	self.backPropError;
 			
 		
