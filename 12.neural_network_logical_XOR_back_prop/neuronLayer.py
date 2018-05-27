@@ -18,6 +18,7 @@ class neuronLayer:
 			self.neuronArr.append(temp_neuron); #initialised neuron added to array
 
 		self.netError = 0;#this value holds the net error from backprop on all training examples
+		self.backPropError = []; #in case of multi class classification, it's a vector
 
 	#this constructor only creates a blank array, assuming that neurons will be injected externally
 	def __init__(self):
@@ -25,6 +26,7 @@ class neuronLayer:
 		self.neuronArr = [];
 		self.outputArr = [];#this array holds the outputs of the individual neurons;used for backprop
 		self.netError = 0;#this value holds the net error from backprop on all training examples
+		self.backPropError = []; #in case of multi class classification, it's a vector
 		
 	def addNeuron(self,neuron):
 		self.neuronArr.append(neuron);
@@ -61,12 +63,48 @@ class neuronLayer:
 		result.extend(arr);#concat
 		return result;
 
-	def getNetError(self):
+	def getNetError(self):# this returns the error accumalator value vector
 		return self.netError;
 
 	def addToNetError(self, errorOfSingleExample): #called for each point in the training set
 		self.netError = self.netError + errorOfSingleExample;
 
 	def updateBackPropError(self,nextLayerError):
-		pass
+		
+		#implement weighted sum of errorTerms of nextLayerError
+		#error vector delta, doesn't contain bias unit
+
+		print('Error vector received:\n'+str(nextLayerError));
+
+		layerParamArray = self.getParamMatrix(); #consolidate param vectors of individual neurons
+		print('Param matrix of layer:\n'+str(layerParamArray));
+
+		#length of the error vector is equal to the number of neurons in this layer
+		for neuron in self.neuronArr):
+			tempErrorHolder = 0; #create a placeholder for neuron		
+			for i in range(len(nextLayerError)):
+				tempErrorHolder = tempErrorHolder + neuron.getParamArr()[i+1]*nextLayerError[i];
+				#i+1 accounts for the bias unit added to paramArr
+			neuron.setError(tempErrorHolder);
+			self.backPropError.append(tempErrorHolder);
+
+		return 	self.backPropError;
+			
+		
+
+	#this method combines the param arrays of individual neurons to get layer level matrix
+	def getParamMatrix(self):
+		result = [];
+		for neuron in self.neuronArr:
+			result.append(neuron.getParamArr());#append, not extend
+		return np.array(result)# get operable matrix
+
+	def getOutputDerivativeVectorFromNeurons(self):
+		result = [];
+		for neuron in self.neuronArr:
+			result.append(neuron.getDerivOfSigmoid());
+		return np.array(result)# get operable matrix
+
+	def getOutputDerivativeVectorFromLayerOutput(self):
+		return self.outputArr * (1-self.outputArr);
 
