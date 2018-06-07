@@ -25,12 +25,13 @@ class linearRegrModuleMultivariant:
 				#theta0_err = theta0_err + self.getCostForDatapoint(point)
 				#theta1_err = theta1_err + (point.getInputArr() * self.getCostForDatapoint(point))
 				th_err = th_err + (point.getInputArr() * self.getCostForDatapoint(point))
-
+				print('In: '+str(point.getInputArr()))
+				print('Cost: '+str(self.getCostForDatapoint(point)))
+				print('prod: '+str(point.getInputArr() * self.getCostForDatapoint(point)))
+			#single output multiplied to all inputs
 			temp0 = self.th - (self.a * th_err)/m
-			#temp1 = self.t1 - (self.a * theta1_err)/m
 			temp0 = self.doArrRounding(temp0)
-			#temp0 = round(temp0,7)
-			#temp1 = round(temp1,7) #prevent highly precise computation
+					
 			
 			
 			if((temp0 == self.th).all()):# .all() method needed for element by element comparison
