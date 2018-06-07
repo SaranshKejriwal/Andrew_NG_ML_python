@@ -37,13 +37,14 @@ def main():
 	print('0 XOR 1: '+str(xnor_nn.getOutputArr([1,0,1])));#bias unit comes first
 	print('1 XOR 0: '+str(xnor_nn.getOutputArr([1,1,0])));#bias unit comes first
 	print('1 XOR 1: '+str(xnor_nn.getOutputArr([1,1,1])));#bias unit comes first
-	print('Note: First element is bias term');
+	
 
 	'''
 	XNOR neural network created. Computing error for XOR
 	'''
 
 	xnor_nn.computeNetError(dataset);
+	xnor_nn.updateModel(dataset);
 
 def createDataset():
 	set1 = dataSet();

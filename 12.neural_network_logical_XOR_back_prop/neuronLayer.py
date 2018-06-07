@@ -17,7 +17,7 @@ class neuronLayer:
 			temp_neuron = neuron(temp_paramArr)
 			self.neuronArr.append(temp_neuron); #initialised neuron added to array
 
-		self.netError = 0;#this value holds the net error from backprop on all training examples
+		self.netError = [];#this array holds the net error for each neuron from backprop across all training examples
 		self.backPropError = []; #in case of multi class classification, it's a vector
 
 	#this constructor only creates a blank array, assuming that neurons will be injected externally
@@ -25,11 +25,11 @@ class neuronLayer:
 		#numInputs is the number of outputs of the previous layer, or the number of features at input layer
 		self.neuronArr = [];
 		self.outputArr = [];#this array holds the outputs of the individual neurons;used for backprop
-		self.netError = 0;#this value holds the net error from backprop on all training examples
+		self.netError = [];#this array holds the net error for each neuron from backprop across all training examples
 		self.backPropError = []; #in case of multi class classification, it's a vector
 		
 	def addNeuron(self,neuron):
-		self.neuronArr.append(neuron);
+		self.neuronArr.append(neuron);		
 
 	def getNumNeurons(self):
 		return len(self.neuronArr);
@@ -66,8 +66,18 @@ class neuronLayer:
 	def getNetError(self):# this returns the error accumalator value vector
 		return self.netError;
 
+	def resetNetError(self):
+		self.netError = [];
+		#while updating our model, we compute the backprop error of the network over the same dataset multiple times.
+		#we do not want the error from the last such computation affecting the next one. 
+
 	def addToNetError(self, errorOfSingleExample): #called for each point in the training set
+		#errorOfSingleExample is the element wise multiplication of d(i) and a(i) for ith example
+		if(self.netError == []): #uninitialized empty array
+			self.netError = errorOfSingleExample #to init netError array to correct size using 1st example's error
+			return
 		self.netError = self.netError + errorOfSingleExample;
+		self.netError = np.around(self.netError,3);#round-off all elements
 
 	def updateBackPropError(self,nextLayerError):
 		
@@ -88,8 +98,17 @@ class neuronLayer:
 			self.backPropError.append(tempErrorHolder);
 
 			#add this value to net error
+			#computing a(i).d(i), not a(i).d(i+1); How will that even work ?
 
 		#partial deriv wrt a single param (i,j) = a(j,l)*d(i,l+1)
+		errorOfSingleExample = self.outputArr * self.backPropError
+		#outputArr is updated during forward prop anyway
+
+		#print('backPropError: '+str(self.backPropError));
+		#print('outputArr: '+str(self.outputArr));
+		#print('adding Error: '+str(errorOfSingleExample));
+		self.addToNetError(errorOfSingleExample);
+
 		return 	self.backPropError;
 			
 		
@@ -109,4 +128,13 @@ class neuronLayer:
 
 	def getOutputDerivativeVectorFromLayerOutput(self):
 		return self.outputArr * (1-self.outputArr);
+
+	
+	def updateNeurons(self, numTrainingExamples):
+		#this method performs linear regression on individual neurons
+		i=0
+		for neuron in self.neuronArr:
+			neuron.updateParamsUsingError(self.netError[i]/numTrainingExamples);
+			i=i+1;
+
 

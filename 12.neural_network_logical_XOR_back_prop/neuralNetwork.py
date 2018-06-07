@@ -29,9 +29,8 @@ class neuralNetwork:
 	#this method returns the hypothesis for a given input
 	def getOutputArr(self, inputArr):
 		#return output without bias unit
-		return np.delete(self.propagateForward(inputArr,len(self.neuronLayerArr)-1),0);#remove first term
-		#return output without bias unit
-		#return self.propagateForward(inputArr,len(self.neuronLayerArr)-1);
+		outputArr = np.delete(self.propagateForward(inputArr,len(self.neuronLayerArr)-1),0);#remove 0th term
+		return np.around(outputArr,3);#round-off all indices of the array
 		
 		
 	#This method to be called only when all layers are appended to the network object
@@ -49,29 +48,60 @@ class neuralNetwork:
 		#separate computation for output layer
 		#outputLayer is self.neuronLayerArr[len(self.neuronLayerArr)-1];
 		hypothesis = self.getOutputArr(expectedPoint.getInputArr());#this updates the layer params
-		print('___________________________\nHypothesis for '+str(expectedPoint.getInputArr())+' : '+str(hypothesis));
+		lastLayerIdx = len(self.neuronLayerArr)-1# len starts from 1, not 0
+		print('__________\nHypothesis for '+str(expectedPoint.getInputArr())+' : '+str(hypothesis));
 		print('Expected Output for '+str(expectedPoint.getInputArr())+' : '+str(expectedPoint.getOutput()));
 
-		#networkError[len(self.neuronLayerArr)-1] holds output layer error
-		networkError[len(self.neuronLayerArr)-1] = hypothesis - expectedPoint.getOutput();# these include bias terms
+		#networkError[lastLayerIdx] holds output layer error
+		networkError[lastLayerIdx] = hypothesis - expectedPoint.getOutput();# these don't include bias terms
 		#output layer is currently 1 neuron, for single class classif
-		self.neuronLayerArr[len(self.neuronLayerArr)-1].addToNetError(np.dot(networkError[len(self.neuronLayerArr)-1], expectedPoint.getOutput())); #add net delta from all training examples
-		print('Error for '+str(expectedPoint.getInputArr())+' : '+str(networkError[len(self.neuronLayerArr)-1]));
+		self.neuronLayerArr[lastLayerIdx].addToNetError(networkError[lastLayerIdx]);
+		#add net delta from all training examples
+		print('Error for '+str(expectedPoint.getInputArr())+' : '+str(networkError[lastLayerIdx]));
 
 		for i in range (len(self.neuronLayerArr)-2 , 1): #loop covers all hidden layers
 			#supply networkError on (i+1)th layer to i'th layer
 			networkError[i] = self.neuronLayerArr[i].updateBackPropError(networkError[i+1]);
-			#updateBackPropError returns the error vector of that layer to the network level matrix
-			print('Error of layer '+str(i)+' : '+str(networkError[i]));
-		print('Neural Network error:\n'+str(networkError));
-		return networkError;
-		
+			#updateBackPropError returns the error vector of that layer to the network level matrix, 
+			#and adds the error of that training example to net error array of that layer
+			
+		#print('Neural Network error:\n'+str(networkError));
+		return networkError;#this array of errors per neuron isn't used
+	'''
+	#this method ensures that a positive error and a negative error don't cancel one another out ':)
+	def modulus(self,inputNum):
+		if(inputNum >=0):
+			return inputNum;
+		else:
+			return -1*inputNum;
+	'''
+
+	def resetAllLayerErrors(self):
+		#this method resets the net error of all layers, that was added up over the last computeNetError call
+		for layer in self.neuronLayerArr:
+			layer.resetNetError();
 
 	def updateModel(self, dataset):
-		pass
+		i=0
+		m=len(dataset.getData())
+		#while True:#risky
+		while i<100:		
+			for layer in self.neuronLayerArr:
+				#print('Avg error of layer '+str(i)+' over all examples: '+str(layer.netError/m));
+				layer.updateNeurons(m);
+				i=i+1;
+			self.computeNetError(dataset);#keep doing backprop, till the error (hopefully) minimizes
+		
 
 	def computeNetError(self, dataset):
+		self.resetAllLayerErrors();#incremental computations shouldn't stack
 		for point in dataset.getData():
 			#self.propagateForward(point.getInputArr(), len(self.neuronLayerArr)-1);#this updates the layer outputs
 			self.propagateBack(point)#this is the training example
-		
+		i=0
+		for layer in self.neuronLayerArr:
+			print('Net error of layer '+str(i)+' over all examples: '+str(layer.netError));
+			i=i+1;
+		print('__________________________________________________')
+		#warning - reset each layer's net error before calling this method again to prevent stacking
+
