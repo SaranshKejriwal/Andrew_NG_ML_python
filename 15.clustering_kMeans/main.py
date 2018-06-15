@@ -7,7 +7,7 @@ def main():
 	dataset = createDataset();
 	kmeans_module = opencv_kMeansModule(2);#numClusters
 
-	kmeans_module.run_kMeans(dataset.getData());
+	kmeans_module.run_kMeans(dataset.getData(), 10);
 
 	kmeans_module.printCentroids();
 	

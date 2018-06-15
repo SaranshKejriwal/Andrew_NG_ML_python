@@ -1,20 +1,13 @@
 import sys
-import cv2
-import cv
 import numpy as np
 from dataset import *
 import random
 import math
 
-
-scale_multiplier = 3;
-#this global value enlarges the point values, to spread them better for drawing on the Mat
-
-class opencv_kMeansModule:
+class kMeansModule:
 
 	def __init__(self, numClusters):
 		
-		self.graph = cv2.imread("ui_blank.jpg")		
 		self.centroidArr = []
 
 		i=0;
@@ -23,37 +16,23 @@ class opencv_kMeansModule:
 			tempCentroid = dataPoint(random.randint(25,75),random.randint(25,75));
 			self.centroidArr.append(tempCentroid);
 			i=i+1;
-		print('Centroids initialized')
+		print('Centroids initialized');
+		self.printCentroids();
 
-	def run_kMeans(self,dataset, iterations):
+	def run_kMeans(self,dataset, iterations):	
 		
-		#Note - iterations are ignored here, since we need to run an infinite loop to show the image to the viewer.
+		i=0
 		
-		cv2.namedWindow('graph')
-		cv2.moveWindow('graph',5,5)
-
-		self.drawPoints(dataset)
-		self.drawCentroids();
-		
-		
-		while(True):
-			self.graph = cv2.imread("ui_blank.jpg")		
-
+		while(i < iterations):
+			print('Iteration '+str(i+1));
 			clusterArr = []; #this array will hold the individual clusters of points, which in-turn are also arrays	
 			
 			#assign dataset points to individual clusters
 			clusterArr = self.assignCluster(dataset);
 			self.moveCentroids(clusterArr);	
+			self.printCentroids();
+			i=i+1;
 			
-			
-			self.drawCentroids();
-			self.drawDecisionBoundary();
-			self.drawPoints(dataset)#points should overlap the line
-			self.writeCentroidCoord()
-			cv2.imshow('graph',self.graph)
-
-			if(cv2.waitKey(10) & 0xFF == ord('b')):
-        			break
 
 	def assignCluster(self, dataset):
 		clusterArr = [];
@@ -111,48 +90,9 @@ class opencv_kMeansModule:
 		for i in range(2):
 			difference = p1.inputArr[i] - p2.inputArr[i];
 			squaredDistance = squaredDistance + difference*difference;
-		return math.sqrt(squaredDistance);
-		
-	def drawPoints(self,dataset):
-		for point in dataset:
-			cv2.circle(self.graph, (point.inputArr[0]*scale_multiplier,point.inputArr[1]*scale_multiplier), 3, (10, 50, 200), 6)
+		return math.sqrt(squaredDistance);	
 
-	def drawCentroids(self):
-		for point in self.centroidArr:
-			cv2.circle(self.graph, (point.inputArr[0]*scale_multiplier,point.inputArr[1]*scale_multiplier), 6, (200, 50, 0), 5)
-
-	def writeCentroidCoord(self):
-		for i in range(len(self.centroidArr)):			
-			toWrite = 'Centroid_'+str(i+1)+': ' + str(self.centroidArr[i].getInputArr());
-			cv2.putText(self.graph,toWrite,(300,(80+32*i)),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),1)	
-						
-
-	def connectCentroids(self):
-		for point in self.centroidArr:
-			for ref in self.centroidArr:
-				cv2.line(self.graph,(point.inputArr[0]*scale_multiplier,point.inputArr[1]*scale_multiplier),(ref.inputArr[0]*scale_multiplier,ref.inputArr[1]*scale_multiplier),(100,0,100),4)
-		
-
-	def drawDecisionBoundary(self):
-		for point in self.centroidArr:
-			for ref in self.centroidArr:
-
-				if(point.inputArr[0] == ref.inputArr[0] and point.inputArr[1] == ref.inputArr[1]):
-					continue;#point and ref are the same point
-
-				midPt = dataPoint((point.inputArr[0] + ref.inputArr[0])/2, (point.inputArr[1] + ref.inputArr[1])/2);
-				if(point.inputArr[0] != ref.inputArr[0]):
-					slope = -1/(float(point.inputArr[1] - ref.inputArr[1])/float(point.inputArr[0] - ref.inputArr[0]));
-				else:
-					slope = 100000000000; #infinite slope for vertical line
-				c = midPt.inputArr[1] - slope*midPt.inputArr[0]; #c -> y = mx+c
-				
-				x_intercept = int((c*-1)/slope); #when y=0
-				y_intercept = int(c);
-				if(x_intercept >0 and y_intercept >0):
-					cv2.line(self.graph,(0,y_intercept*scale_multiplier),(x_intercept*scale_multiplier,0),(100,0,100),4)
-				
-
+	
 	def printCentroids(self):
 		print('Centroids computed:');
 		for c in self.centroidArr:
